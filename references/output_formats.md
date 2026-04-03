@@ -107,6 +107,8 @@ $$
 
 ## 图 1：<Figure 1 caption verbatim>
 
+![图 1](images/figure_1.png)
+
 **解析**：<What does this figure show? What insight does it convey?
 Why did the authors include it — what argument does it support?
 For result figures: what do the numbers or curves mean for the paper's claims?>
@@ -115,10 +117,14 @@ For result figures: what do the numbers or curves mean for the paper's claims?>
 
 ## 图 2：<Figure 2 caption verbatim>
 
+![图 2](images/figure_2.png)
+
 **解析**：<...>
 
-<!-- Continue for all figures found. If a figure has subfigures (a)(b)(c),
-     describe each subfigure separately within the same section. -->
+<!-- Continue for all figures in ascending figure-number order.
+     If image extraction failed for a figure (matched: false), omit the ![]() line
+     and start the analysis with "（图片提取失败，仅文字描述）".
+     If a figure has subfigures (a)(b)(c), describe each subfigure within the same section. -->
 ```
 
 ---

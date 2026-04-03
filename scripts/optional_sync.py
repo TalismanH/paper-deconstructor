@@ -83,10 +83,9 @@ def sync_chromadb(output_dir: Path, title: str, env: dict) -> dict:
 
     try:
         import chromadb
-        from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
     except ImportError:
         return {"error": "chromadb not installed. Run: pip install chromadb"}
-    
+
     client = chromadb.PersistentClient(path=chromadb_path)
     collection = client.get_or_create_collection(
         name="academic_papers",

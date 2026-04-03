@@ -11,15 +11,7 @@ Extract and organize knowledge from a research PDF into 5 structured files, then
 
 ## Prerequisites
 
-Check once before starting:
-
-```bash
-python -c "import fitz" 2>/dev/null || pip install pymupdf
-python -c "import pyzotero" 2>/dev/null || pip install pyzotero
-python -c "import dotenv" 2>/dev/null || pip install python-dotenv
-```
-
-Also confirm a `.env` file exists at `~/.codex/skills/paper-deconstructor/.env` with:
+Confirm a `.env` file exists at `~/.claude/skills/paper-deconstructor/.env` with:
 - `ZOTERO_USER_ID`
 - `ZOTERO_API_KEY`
 
@@ -48,6 +40,22 @@ Create a folder named after the paper (slugified title or filename stem) **in th
 Example: `/papers/attention_is_all_you_need.pdf` → `/papers/attention_is_all_you_need/`
 
 Use the title from extracted metadata if available; otherwise use the PDF filename stem.
+
+## Step 2b: Extract Figure Images
+
+Run this immediately after creating the output directory, so images are ready when writing `picture.md`:
+
+```bash
+python "<skill_dir>/scripts/extract_figures.py" "<pdf_path>" "<output_dir>/images"
+```
+
+This saves each detected figure as `images/figure_N.png` inside the output directory and prints a JSON list:
+
+```json
+[{"number": "1", "caption": "...", "path": "figure_1.png", "matched": true}, ...]
+```
+
+Keep this list — you'll use it when writing `picture.md`.
 
 ## Step 3: Read and Analyze the Content
 
@@ -95,15 +103,18 @@ Cover in order:
 
 ### picture.md — 图表解析
 
-For each figure identified in the extraction (or found manually in the text):
+Use the figure list from Step 2b. Write one section per figure, **in ascending figure-number order**. For each figure:
 
 ```markdown
-## 图 N：<figure caption>
+## 图 N：<figure caption verbatim>
 
-**解析**：<Your detailed explanation of what this figure shows, what insight it conveys, and why it matters to the paper's argument>
+![图 N](images/figure_N.png)
+
+**解析**：<What does this figure show? What insight does it convey, and why did the authors include it?>
 ```
 
-If no figure captions were extracted, scan the full text for "Figure N" / "Fig. N" patterns manually.
+- If `matched: false` for a figure (image could not be extracted), omit the `![]()` line and add `（图片提取失败，仅文字描述）` at the start of the analysis.
+- If Step 2b returned no figures at all, fall back to scanning the full text for "Figure N" / "Fig. N" patterns manually and write text-only entries.
 
 ### qa.md — 知识问答
 
