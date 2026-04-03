@@ -69,6 +69,13 @@ def sync_obsidian(output_dir: Path, title: str, env: dict) -> dict:
         shutil.copy2(md_file, target)
         copied.append(md_file.name)
 
+    images_src = output_dir / "images"
+    if images_src.is_dir():
+        images_dest = dest / "images"
+        if images_dest.exists():
+            shutil.rmtree(images_dest)
+        shutil.copytree(images_src, images_dest)
+
     return {"success": True, "vault_folder": str(dest), "files": copied}
 
 
