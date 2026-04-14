@@ -27,7 +27,12 @@ python "<skill_dir>/scripts/extract_pdf.py" "<pdf_path>"
 
 This outputs JSON with: `metadata`, `full_text`, `sections`, `figures`, `has_appendix`, `is_review`, `is_computational`.
 
-If the PDF is image-based (scanned) and text extraction yields fewer than 500 characters, warn the user: "This appears to be a scanned PDF — text extraction is limited. Results may be incomplete."
+If the PDF is image-based (scanned) and text extraction yields fewer than 500 characters, **attempt OCR before giving up**. Invoke any available OCR tool, for example:
+- `pdf2image` + `pytesseract`: convert each page to an image, then run `pytesseract.image_to_string(page_image)`
+- System CLI: `tesseract <image_file> stdout -l eng`
+- Platform OCR APIs (e.g., Windows OCR, macOS Vision, Google Cloud Vision) if available
+
+If OCR succeeds and yields sufficient text, continue with the normal workflow using the OCR output. If OCR is unavailable or still yields fewer than 500 characters, warn the user: "This appears to be a scanned PDF — text extraction is limited. Results may be incomplete."
 
 ## Step 2: Determine Output Directory
 
@@ -84,12 +89,18 @@ Cover in order:
 
 ### method.md — 方法详解
 
+**Read the algorithm/method section paragraph by paragraph** — don't skim. Every formula, assumption, and design decision matters. Go back and re-read any paragraph you're unsure about before writing.
+
 Cover in order:
-1. **理论基础** — Underlying theory, key assumptions, governing equations
-2. **模型/框架结构** — Architecture, components, and how they connect
-3. **技术细节** — Key parameters, computational workflow, time-step settings, loss functions, etc.
-4. **数学公式** — All important equations in LaTeX block format (`$$ ... $$`), including inline equations (`$ ... $`)
-5. **附录方法** (if `has_appendix` is true) — Additional methodology and equations from the appendix
+1. **理论基础** — The physical, mathematical, or computational theory this method is grounded in; governing equations it derives from
+2. **核心假设** — Every explicit and implicit assumption the method makes (geometry, physical regime, data properties, scale constraints)
+3. **模型/框架结构** — Architecture, components, and data/information flow between them
+4. **数学公式** — Every important equation in LaTeX block format (`$$ ... $$`); define each symbol and explain what the equation represents
+5. **计算流程** — Step-by-step walkthrough of how the method executes: inputs → intermediate stages → outputs
+6. **细节设置** — Hyperparameters, mesh/time-step settings, convergence criteria, loss term weights, initialization strategies, training tricks
+7. **适用范围** — Scope: 2D vs 3D, problem types (steady/transient, linear/nonlinear), model size requirements, hardware constraints
+8. **方法缺陷** — Where the method fails or degrades; think critically beyond what the authors themselves acknowledge
+9. **附录方法** (if `has_appendix` is true) — Additional methodology, derivations, or equations from the appendix
 
 **For review papers**, add a section at the end:
 
@@ -119,7 +130,7 @@ Use the figure list from Step 2b. Write one section per figure, **in ascending f
 ### qa.md — 知识问答
 
 Generate 8–12 Q&A pairs that cover the most important concepts. Mix:
-- Detailed conceptual understanding (What is X? Why does Y matter?)
+- Conceptual understanding (What is X? Why does Y matter?)
 - Technical details (How is Z computed? What are the key parameters?)
 - Critical thinking (What are the limitations of this approach?)
 

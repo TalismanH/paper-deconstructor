@@ -60,7 +60,7 @@ def sync_obsidian(output_dir: Path, title: str, env: dict) -> dict:
 
     # Create a folder inside the vault named after the paper
     safe_title = "".join(c if c.isalnum() or c in " _-" else "_" for c in title)[:80]
-    dest = vault / "Papers" / safe_title
+    dest = vault / "raw" / "Papers" / safe_title
     dest.mkdir(parents=True, exist_ok=True)
 
     copied = []

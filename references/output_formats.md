@@ -57,19 +57,22 @@ What is the broader impact on the field?>
 
 ## 1. 理论基础
 
-<Underlying physical, mathematical, or computational theory.
-Key assumptions the method relies on.>
+<The physical, mathematical, or computational theory this method is grounded in.
+Governing equations it derives from. Why these theoretical foundations justify the approach.>
 
-## 2. 模型/框架结构
+## 2. 核心假设
+
+<List every explicit and implicit assumption the method makes:
+- 几何与维度：2D/3D？结构化/非结构化网格？
+- 物理条件：线性/非线性？稳态/瞬态？特定流态或变形范围？
+- 数据要求：噪声水平、采样密度、数据完整性？
+- 规模约束：参数量、域大小、分辨率限制？
+标注哪些假设是作者明确提出的，哪些是隐含的。>
+
+## 3. 模型/框架结构
 
 <Architecture and components. How are they connected?
 Include a high-level description of the data/information flow.>
-
-## 3. 技术细节
-
-<Key parameters and their meaning.
-Computational workflow: input → processing → output.
-Time-step settings, mesh settings, convergence criteria, loss terms, etc.>
 
 ## 4. 核心数学公式
 
@@ -79,9 +82,45 @@ $$
 \mathcal{L} = \mathcal{L}_{\text{data}} + \lambda \mathcal{L}_{\text{physics}}
 $$
 
-<Explain each equation: what it represents, what each term/symbol means.>
+<For each equation: what it represents, define every symbol, explain the physical/mathematical intuition.>
 
-## 5. 附录方法（如适用）
+## 5. 计算流程
+
+<Step-by-step execution of the method:
+1. **输入**：方法接收什么数据/参数？
+2. **预处理**：归一化、网格划分、采样等
+3. **核心计算**：每个阶段发生了什么？
+4. **输出**：方法返回什么结果？
+用编号步骤或伪代码使流程具体化。>
+
+## 6. 细节设置
+
+<Specific settings that matter for the method to work:
+- 超参数及其典型值与敏感性
+- 网格/时间步长选择
+- 收敛标准和停止条件
+- 损失项权重、正则化策略
+- 初始化和训练技巧（如适用）>
+
+## 7. 适用范围
+
+<Where does this method work well:
+- **维度**：支持 2D / 3D？两者性能是否有差异？
+- **问题类型**：稳态/瞬态、线性/非线性、适用的 PDE 类型
+- **规模要求**：可处理的问题规模或模型大小范围
+- **硬件需求**：计算资源要求
+- **已验证领域**：论文中实际测试过的应用场景>
+
+## 8. 方法缺陷
+
+<Critical limitations — go beyond what the authors acknowledge:
+- 哪些问题类型会导致方法失效或精度下降？
+- 违反哪些假设会破坏方法的有效性？
+- 计算成本 / 可扩展性问题
+- 特定条件下的精度或收敛问题
+- 实际使用中的困难（例如难以调参、需要领域专家知识）>
+
+## 9. 附录方法（如适用）
 
 <Additional methodology, derivations, or equations from the appendix.>
 
