@@ -4,6 +4,8 @@ Exact templates for each output file produced by the paper-deconstructor skill.
 All text (headings included) is in **Chinese** except `code.md`.
 Technical terms keep their English names inline: "物理信息神经网络 (Physics-Informed Neural Networks, PINNs)".
 
+**Math formatting**: Inline variables and expressions use LaTeX — `$x$`, `$\lambda$`, `$\nabla u$` — never backtick code blocks for math. Block equations use `$$ ... $$`.
+
 ---
 
 ## summary.md — 全文概述
@@ -175,45 +177,47 @@ For result figures: what do the numbers or curves mean for the paper's claims?>
 
 ---
 
-**Q1: <核心概念问题，例如：什么是 PINNs？>**
-A: <Answer. Explain clearly, assuming the reader hasn't read the paper.>
+**Q1: <推导类 — 某个公式或设计选择背后的数学原因>**
+A: <Answer. Trace the reasoning from first principles, not just restate the paper.>
 
-**Q2: <方法机制问题，例如：该方法的损失函数由哪几部分组成？>**
+**Q2: <机制类 — 某个组件为什么这样设计？去掉它会怎样？>**
 A: <...>
 
-**Q3: <关键参数/设置问题>**
+**Q3: <对比类 — 与某具体已有方法相比，本文在哪个假设上做了不同取舍？>**
 A: <...>
 
-**Q4: <与现有方法的对比问题>**
+**Q4: <失效类 — 在什么条件下该方法会失效？作者是否意识到了？>**
 A: <...>
 
-**Q5: <实验结果解读>**
+**Q5: <延伸类 — 应用到论文未测试的场景会遇到什么挑战？>**
 A: <...>
 
-**Q6: <局限性与适用场景>**
+**Q6: <实验解读类 — 某个实验结果说明了什么？是否充分支持作者的论断？>**
 A: <...>
 
 **Q7: <公式推导或理论理解>**
 A: <...>
 
-**Q8: <未来研究方向>**
+**Q8: <关键参数敏感性 — 某超参数的选择对结果影响有多大？>**
 A: <...>
 
-<!-- Add up to 12 pairs. Prioritize questions that test deep understanding,
-     not trivial lookups. -->
+<!-- Add up to 12 pairs. Every question should require reasoning or synthesis to answer —
+     avoid trivial lookups like "What does X stand for?" or "What dataset was used?".
+     Answers should include inline LaTeX for any variables or expressions: $\lambda$, $\mathcal{L}$, etc. -->
 ```
 
 ---
 
 ## code.md — 伪代码实现（仅限计算/模拟类论文）
 
-```markdown
+````markdown
 # 伪代码实现：<Paper Title>
 
-# Based on: <paper citation>
-# Language: Python pseudocode (illustrative, not production-ready)
-# Comments: Chinese | Code: English
+> Based on: <paper citation>
+> Language: Python pseudocode (illustrative, not production-ready)
+> Comments: Chinese | Code: English
 
+```python
 import numpy as np
 # (add relevant libraries as described in the paper)
 
@@ -255,8 +259,8 @@ def compute_loss(model, x_data, u_data, x_colloc):
     计算总损失：L = L_data + lambda * L_physics
     参见论文公式 (N).
     """
-    loss_data = ...   # 数据拟合项
-    loss_physics = ...  # 物理约束项
+    loss_data = ...      # 数据拟合项
+    loss_physics = ...   # 物理约束项
     return loss_data + config.lambda_ * loss_physics
 
 
@@ -273,8 +277,10 @@ def train(model, optimizer, epochs):
             print(f"Epoch {epoch}: loss = {loss.item():.6f}")
 ```
 
-<!-- For review papers comparing multiple models, add a short stub per model:
-     # Model A (Abbreviation) — pseudocode
-     # Model B (Abbreviation) — pseudocode
+<!-- For review papers comparing multiple models, give each its own labeled ```python block:
+     ## Model A (Abbreviation)
+     ```python ... ```
+     ## Model B (Abbreviation)
+     ```python ... ```
      Keep each stub short (10–30 lines). Focus on the key algorithmic difference. -->
-```
+````

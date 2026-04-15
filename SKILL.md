@@ -9,6 +9,8 @@ Extract and organize knowledge from a research PDF into 5 structured files, then
 
 **Output language rule**: All files are written in **Chinese**, except `code.md` which uses English code with Chinese comments. Technical terms keep their original English names and abbreviations inline — e.g., "物理信息神经网络 (Physics-Informed Neural Networks, PINNs)".
 
+**Math formatting rule**: Inline variables, symbols, and short expressions always use LaTeX inline format — `$x$`, `$\lambda$`, `$\mathcal{L}_{\text{data}}$` — never backtick code blocks for math. Block equations use `$$ ... $$`. This applies to every output file including summary, method, qa, and picture.
+
 ## Prerequisites
 
 Confirm a `.env` file exists at `~/.claude/skills/paper-deconstructor/.env` with:
@@ -129,10 +131,14 @@ Use the figure list from Step 2b. Write one section per figure, **in ascending f
 
 ### qa.md — 知识问答
 
-Generate 8–12 Q&A pairs that cover the most important concepts. Mix:
-- Conceptual understanding (What is X? Why does Y matter?)
-- Technical details (How is Z computed? What are the key parameters?)
-- Critical thinking (What are the limitations of this approach?)
+Generate 8–12 Q&A pairs. The goal is to force deep engagement with the paper — questions a researcher would ask after reading carefully, not a student skimming the abstract. Avoid surface-level lookups ("What does X stand for?"). Instead, aim for questions that require reasoning, synthesis, or critical evaluation:
+
+- **推导类**：某个设计选择背后的数学原因是什么？某公式是如何从基本原理推导出来的？
+- **机制类**：方法的某个组件为什么这样设计？去掉它会发生什么？
+- **对比类**：与某个具体的已有方法相比，本文方法在哪个假设上做了不同的取舍？
+- **失效类**：在什么条件下该方法会失效？作者是否意识到了这一点？
+- **延伸类**：如果将该方法应用到论文未测试的场景（不同维度、不同物理问题、更大规模），预期会遇到什么挑战？
+- **实验解读类**：某个实验结果说明了什么？它是否充分支持了作者的论断？
 
 Format:
 ```markdown
@@ -148,6 +154,8 @@ Write Python pseudocode that captures the core algorithm. Comments in Chinese, c
 - Main algorithm / training loop
 - Key equations as code
 - Data flow and processing steps
+
+Wrap all pseudocode in a **single** fenced ` ```python ... ``` ` block. Do not split into multiple blocks unless there are genuinely separate, independent algorithms (e.g., a review paper comparing distinct models — give each its own labeled block).
 
 If it's a review paper with multiple models, write a short pseudocode stub for each main model being compared.
 
