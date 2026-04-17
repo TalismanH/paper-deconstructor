@@ -126,8 +126,12 @@ Use the figure list from Step 2b. Write one section per figure, **in ascending f
 **解析**：<What does this figure show? What insight does it convey, and why did the authors include it?>
 ```
 
-- If `matched: false` for a figure (image could not be extracted), omit the `![]()` line and add `（图片提取失败，仅文字描述）` at the start of the analysis.
-- If Step 2b returned no figures at all, fall back to scanning the full text for "Figure N" / "Fig. N" patterns manually and write text-only entries.
+The figure list now includes a `screenshot` field:
+- `matched: true, screenshot: false` — discrete image block extracted cleanly. Embed normally.
+- `matched: true, screenshot: true` — vector graphic or complex figure; a page-region screenshot was captured as fallback. Embed the image but add a small note `（页面截图）` after the caption line so the reader knows it may include surrounding whitespace or adjacent text.
+- `matched: false` — extraction failed entirely (rare). Omit the `![]()` line and add `（图片提取失败，仅文字描述）` at the start of the analysis.
+
+If Step 2b returned no figures at all, fall back to scanning the full text for "Figure N" / "Fig. N" patterns manually and write text-only entries.
 
 ### qa.md — 知识问答
 

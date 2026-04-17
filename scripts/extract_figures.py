@@ -7,7 +7,9 @@ Strategy:
   2. Scan each page for figure captions ("Figure N" / "Fig. N") with their positions.
   3. Match each caption to the nearest image on the same or adjacent page.
   4. Render and save matched images as figure_N.png in the output directory.
-  5. Return JSON list: [{number, caption, path, matched}, ...] sorted by figure number.
+  5. If no image block matches (e.g. vector graphics), fall back to rendering the page
+     region above the caption as a screenshot (figure_N_screenshot.png).
+  6. Return JSON list: [{number, caption, path, matched, screenshot}, ...] sorted by figure number.
 """
 
 import sys
@@ -132,6 +134,50 @@ def extract_figures(pdf_path: str, output_dir: str, dpi: int = 150) -> list:
                 best = img
         return best
 
+    # ----------------------------------------------------------------
+    # Helper: screenshot fallback — render the page region where the
+    # figure should be (above the caption).  Handles vector graphics,
+    # multi-part figures, and any layout PyMuPDF can't decompose into
+    # discrete image blocks.
+    # ----------------------------------------------------------------
+    def screenshot_fallback(cap, num) -> str | None:
+        """
+        Render the figure region as a page screenshot.
+
+        Heuristic: the figure body sits above its caption label.
+        We clip from y=0 to the caption's top edge (plus a small
+        buffer to include the caption itself for context).
+
+        If the caption is very near the top of the page the figure
+        may actually be on the preceding page — we render that page
+        in full instead.
+
+        Returns the saved filename (relative to out_path), or None on error.
+        """
+        try:
+            page_idx = cap["page"]
+            cap_y    = cap["y"]
+            page     = doc[page_idx]
+
+            # Caption is near the very top → figure is likely on the previous page
+            if cap_y < 80 and page_idx > 0:
+                page  = doc[page_idx - 1]
+                clip  = page.rect          # full previous page
+            else:
+                # Clip from page top to just below the caption line
+                clip = fitz.Rect(0, 0, page.rect.width, cap_y + 30)
+                # If the clipped region is tiny, fall back to the full page
+                if clip.height < 80:
+                    clip = page.rect
+
+            mat  = fitz.Matrix(dpi / 72.0, dpi / 72.0)
+            pix  = page.get_pixmap(matrix=mat, clip=clip)
+            fname = f"figure_{num}_screenshot.png"
+            pix.save(str(out_path / fname))
+            return fname
+        except Exception:
+            return None
+
     used_keys: set = set()
     results = []
 
@@ -163,18 +209,31 @@ def extract_figures(pdf_path: str, output_dir: str, dpi: int = 150) -> list:
             pix.save(str(out_path / fname))
 
             results.append({
-                "number":  num,
-                "caption": cap["caption"],
-                "path":    fname,
-                "matched": True,
+                "number":     num,
+                "caption":    cap["caption"],
+                "path":       fname,
+                "matched":    True,
+                "screenshot": False,
             })
         else:
-            results.append({
-                "number":  num,
-                "caption": cap["caption"],
-                "path":    None,
-                "matched": False,
-            })
+            # No discrete image block found — try page-render screenshot
+            fname = screenshot_fallback(cap, num)
+            if fname:
+                results.append({
+                    "number":     num,
+                    "caption":    cap["caption"],
+                    "path":       fname,
+                    "matched":    True,
+                    "screenshot": True,
+                })
+            else:
+                results.append({
+                    "number":     num,
+                    "caption":    cap["caption"],
+                    "path":       None,
+                    "matched":    False,
+                    "screenshot": False,
+                })
 
     doc.close()
     return results
