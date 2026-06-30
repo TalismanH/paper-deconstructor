@@ -86,6 +86,10 @@ $$
 
 <For each equation: what it represents, define every symbol, explain the physical/mathematical intuition.>
 
+<Before finalizing this section, verify each equation against the source PDF text, page screenshot, or OCR output.
+Check subscripts, superscripts, Greek letters, operators, equation numbers, symbol definitions, and obvious dimensional/semantic consistency.
+If the source formula is partially unreadable, state the uncertainty instead of silently guessing.>
+
 ## 5. 计算流程
 
 <Step-by-step execution of the method:
@@ -153,6 +157,10 @@ $$
 **解析**：<What does this figure show? What insight does it convey?
 Why did the authors include it — what argument does it support?
 For result figures: what do the numbers or curves mean for the paper's claims?>
+
+<!-- Confirm that the referenced image file exists under images/.
+     If the figure was recovered from a screenshot, note "（页面截图）" after the caption.
+     If labels, legends, axes, or embedded formulas are too small, rerender/OCR the region before writing the analysis. -->
 
 ---
 

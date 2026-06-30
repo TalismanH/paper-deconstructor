@@ -13,7 +13,27 @@ Extract and organize knowledge from a research PDF into 5 structured files, then
 
 ## Prerequisites
 
-Confirm a `.env` file exists at `~/.claude/skills/paper-deconstructor/.env` with:
+Install the required Python libraries before running the workflow:
+
+```bash
+python -m pip install pymupdf pyzotero python-dotenv
+```
+
+For scanned PDFs, image-only formulas, or low-quality figure captions, install OCR/image helpers as well:
+
+```bash
+python -m pip install pytesseract pdf2image pillow
+```
+
+OCR also needs system binaries:
+- **Tesseract OCR** available on `PATH` (`tesseract --version` should work)
+- **Poppler** for `pdf2image` on platforms that require it
+
+Optional sync integrations:
+- ChromaDB sync: `python -m pip install chromadb`
+- Obsidian sync: no Python package is required; only `OBSIDIAN_VAULT_PATH` in `.env`
+
+Confirm a `.env` file exists at `<skill_dir>/.env` (the directory where this `SKILL.md` lives) with:
 - `ZOTERO_USER_ID`
 - `ZOTERO_API_KEY`
 
@@ -31,10 +51,11 @@ This outputs JSON with: `metadata`, `full_text`, `sections`, `figures`, `has_app
 
 If the PDF is image-based (scanned) and text extraction yields fewer than 500 characters, **attempt OCR before giving up**. Invoke any available OCR tool, for example:
 - `pdf2image` + `pytesseract`: convert each page to an image, then run `pytesseract.image_to_string(page_image)`
+- PyMuPDF page rendering + `pytesseract`: render pages with `fitz` at 200-300 DPI, then OCR the image
 - System CLI: `tesseract <image_file> stdout -l eng`
 - Platform OCR APIs (e.g., Windows OCR, macOS Vision, Google Cloud Vision) if available
 
-If OCR succeeds and yields sufficient text, continue with the normal workflow using the OCR output. If OCR is unavailable or still yields fewer than 500 characters, warn the user: "This appears to be a scanned PDF — text extraction is limited. Results may be incomplete."
+If OCR succeeds and yields sufficient text, continue with the normal workflow using the OCR output and note internally which pages came from OCR. If OCR is unavailable or still yields fewer than 500 characters, warn the user: "This appears to be a scanned PDF — text extraction is limited. Results may be incomplete."
 
 ## Step 2: Determine Output Directory
 
@@ -64,16 +85,25 @@ This saves each detected figure as `images/figure_N.png` inside the output direc
 
 Keep this list — you'll use it when writing `picture.md`.
 
+After the script runs, verify the images rather than assuming extraction succeeded:
+- Check that every returned `path` exists under `<output_dir>/images`.
+- If important figures are missing, rerun with higher DPI (`--dpi 200` or `--dpi 300`) and use screenshot fallbacks from the relevant PDF page regions.
+- If captions are missing or garbled, OCR the rendered page/region to recover the figure number and caption.
+- For vector diagrams, plots, multi-panel figures, or formulas embedded as images, prefer a page-region screenshot over a broken or empty crop.
+- Do not finish `picture.md` until each detected figure/table caption is either backed by a saved image or explicitly marked as extraction failed after OCR/screenshot attempts.
+
 ## Step 3: Read and Analyze the Content
 
-Before writing any files, read the full extracted text carefully. Identify:
+Before writing any files, read the full extracted text carefully and reason paragraph by paragraph. Do a private reading pass that tracks what each paragraph contributes: problem setup, assumption, derivation, method step, experiment detail, result, limitation, or related work. Do not rely only on the abstract, captions, or section headings. Re-read paragraphs that contain formulas, definitions, algorithm steps, or claims that later sections depend on.
+
+Identify:
 - The core research problem being addressed
 - The proposed method or framework
 - Key results and their significance
 - Whether it's a **review paper** (surveys existing work) or **original research**
 - Whether it involves **simulation, algorithms, or numerical computation**
 
-For long papers (>40 pages), prioritize abstract, introduction, method section, conclusion, and any appendix — you don't need to summarize every experiment detail.
+For long papers (>40 pages), still perform a paragraph-level pass over the method, results, figures, conclusion, and appendix. You may compress routine related-work and repetitive experiment paragraphs, but do not skip derivations, assumptions, equations, figure explanations, or result paragraphs that support the paper's claims.
 
 ## Step 4: Generate the 5 Output Files
 
@@ -104,6 +134,12 @@ Cover in order:
 8. **方法缺陷** — Where the method fails or degrades; think critically beyond what the authors themselves acknowledge
 9. **附录方法** (if `has_appendix` is true) — Additional methodology, derivations, or equations from the appendix
 
+Formula verification is mandatory before finalizing `method.md`:
+- Cross-check each important equation against the extracted text, the PDF page image, or OCR output.
+- Verify subscripts, superscripts, Greek letters, operators, equation numbers, and symbol definitions.
+- Check dimensional/semantic consistency when possible: left and right sides should describe the same quantity, and loss/objective terms should have sensible signs and weights.
+- If an equation is ambiguous because extraction mangled it, inspect a screenshot of the source page/region and transcribe from the image. Mark uncertainty explicitly instead of inventing missing terms.
+
 **For review papers**, add a section at the end:
 
 ```markdown
@@ -132,6 +168,8 @@ The figure list now includes a `screenshot` field:
 - `matched: false` — extraction failed entirely (rare). Omit the `![]()` line and add `（图片提取失败，仅文字描述）` at the start of the analysis.
 
 If Step 2b returned no figures at all, fall back to scanning the full text for "Figure N" / "Fig. N" patterns manually and write text-only entries.
+
+When a figure contains embedded formulas, axes, legends, or small labels, inspect the saved image. If labels are unreadable, rerender that region at higher DPI and/or OCR the image so the explanation reflects the actual visual content.
 
 ### qa.md — 知识问答
 
